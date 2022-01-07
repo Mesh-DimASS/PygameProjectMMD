@@ -1,8 +1,9 @@
 import pygame
 import os
+import sys
 
 pygame.init()
-size = width, height = 1910, 990
+size = width, height = 1500, 800
 screen = pygame.display.set_mode(size)
 
 
@@ -34,12 +35,12 @@ class Mountain(pygame.sprite.Sprite):
         self.rect.bottom = height
 
 
-class Landing(pygame.sprite.Sprite):
+class Parachutist(pygame.sprite.Sprite):
     image = load_image("parach.png", -1)
 
     def __init__(self, pos):
         super().__init__(all_sprites)
-        self.image = Landing.image
+        self.image = Parachutist.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = pos[0] - 100
@@ -50,17 +51,52 @@ class Landing(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, 1)
 
 
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
+def start_screen():
+    intro_text = ["Война никогда не меняется...",
+                  "Нажмите любую клавишу для продолжения"]
+
+    fon = pygame.transform.scale(load_image('fon.jpg'), size)
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 100
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height + 50
+        screen.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                return
+        pygame.display.flip()
+        clock.tick(fps)
+
+
 all_sprites = pygame.sprite.Group()
 mountain = Mountain()
 running = True
 clock = pygame.time.Clock()
+fps = 60
+start_screen()
 fps = 60
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            Landing(event.pos)
+            Parachutist(event.pos)
     clock.tick(fps)
     screen.fill((0, 191, 255))
     all_sprites.draw(screen)
