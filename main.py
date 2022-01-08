@@ -86,12 +86,33 @@ def start_screen():
         clock.tick(fps)
 
 
+class Airplane(pygame.sprite.Sprite):
+    image = load_image("airplane.png", -1)
+
+
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
+        self.image = Airplane.image
+
+
+
+    def update(self):
+        self.rect = self.rect.move(10, 0)
+        if self.rect.center[0] > 2000:
+            self.rect.x = 0
+            self.rect.y = 0
+
+
 all_sprites = pygame.sprite.Group()
 mountain = Mountain()
 running = True
 clock = pygame.time.Clock()
 fps = 60
 start_screen()
+Airplane()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
