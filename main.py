@@ -89,7 +89,6 @@ def start_screen():
 class Airplane(pygame.sprite.Sprite):
     image = load_image("airplane.png", -1)
 
-
     def __init__(self):
         super().__init__(all_sprites)
         self.rect = self.image.get_rect()
@@ -97,10 +96,8 @@ class Airplane(pygame.sprite.Sprite):
         self.rect.y = 0
         self.image = Airplane.image
 
-
-
     def update(self):
-        self.rect = self.rect.move(10, 0)
+        self.rect = self.rect.move(5, 0)
         if self.rect.center[0] > 2000:
             self.rect.x = 0
             self.rect.y = 0
