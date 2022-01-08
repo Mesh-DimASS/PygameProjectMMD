@@ -5,6 +5,17 @@ import sys
 pygame.init()
 size = width, height = 1500, 800
 screen = pygame.display.set_mode(size)
+background_rect = screen.get_rect()
+
+font_name = pygame.font.match_font('arial')
+
+
+def draw_text(surf, text, size, x, y):
+    font = pygame.font.Font(font_name, size)
+    text_surface = font.render(text, True, (0, 0, 0))
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
 
 
 def load_image(name, color_key=None):
@@ -33,6 +44,14 @@ class Mountain(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.bottom = height
+        self.done = 0
+        if pygame.sprite.collide_mask():
+            self.done += 1
+        self.done_par()
+
+    def done_par(self):
+        screen.blit(screen, background_rect)
+        draw_text(screen, str(self.done), 18, width / 2, 10)
 
 
 class Parachutist(pygame.sprite.Sprite):
@@ -92,7 +111,6 @@ running = True
 clock = pygame.time.Clock()
 fps = 60
 start_screen()
-fps = 60
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
