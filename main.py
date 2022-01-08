@@ -49,6 +49,8 @@ class Parachutist(pygame.sprite.Sprite):
     def update(self):
         if not pygame.sprite.collide_mask(self, mountain):
             self.rect = self.rect.move(0, 1)
+        else:
+            self.kill()
 
 
 def terminate():
