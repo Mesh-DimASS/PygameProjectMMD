@@ -59,8 +59,8 @@ def terminate():
 
 
 def start_screen():
-    intro_text = ["Война никогда не меняется...",
-                  "Нажмите любую клавишу для продолжения"]
+    with open(os.path.join('data', 'intro_text')) as a:
+        intro_text = list(map(str.strip, a.readlines()))
 
     fon = pygame.transform.scale(load_image('fon.jpg'), size)
     screen.blit(fon, (0, 0))
