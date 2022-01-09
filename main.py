@@ -92,6 +92,7 @@ running = True
 clock = pygame.time.Clock()
 fps = 60
 start_screen()
+fps = 60
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
