@@ -48,7 +48,7 @@ class Mountain(pygame.sprite.Sprite):
 
     def done_par(self):
         screen.blit(screen, background_rect)
-        draw_text(screen, str(self.done), 18, width / 2, 10)
+        draw_text(screen, 'Survivors:' + str(self.done), 18, width / 2, 10)
 
 
 class Parachutist(pygame.sprite.Sprite):
@@ -68,6 +68,23 @@ class Parachutist(pygame.sprite.Sprite):
         else:
             mountain.done += 1
             self.kill()
+
+
+class Airplane(pygame.sprite.Sprite):
+    image = load_image("airplane.png", -1)
+
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
+        self.image = Airplane.image
+
+    def update(self):
+        self.rect = self.rect.move(5, 0)
+        if self.rect.center[0] > 2000:
+            self.rect.x = 0
+            self.rect.y = 0
 
 
 def terminate():
@@ -109,6 +126,7 @@ running = True
 clock = pygame.time.Clock()
 fps = 60
 start_screen()
+Airplane()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
