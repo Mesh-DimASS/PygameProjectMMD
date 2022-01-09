@@ -46,11 +46,6 @@ class Mountain(pygame.sprite.Sprite):
         self.rect.bottom = height
         self.done = 0
 
-    def update(self):
-        if pygame.sprite.collide_mask(self, mountain):
-            self.done += 1
-        self.done_par()
-
     def done_par(self):
         screen.blit(screen, background_rect)
         draw_text(screen, str(self.done), 18, width / 2, 10)
@@ -59,7 +54,7 @@ class Mountain(pygame.sprite.Sprite):
 class Parachutist(pygame.sprite.Sprite):
     image = load_image("parach.png", -1)
 
-    def __init__(self, pos):
+    def __init__(self, pos, mountain):
         super().__init__(all_sprites)
         self.image = Parachutist.image
         self.rect = self.image.get_rect()
@@ -71,6 +66,7 @@ class Parachutist(pygame.sprite.Sprite):
         if not pygame.sprite.collide_mask(self, mountain):
             self.rect = self.rect.move(0, 1)
         else:
+            mountain.done += 1
             self.kill()
 
 
@@ -118,9 +114,10 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            Parachutist(event.pos)
+            Parachutist(event.pos, mountain)
     clock.tick(fps)
     screen.fill((0, 191, 255))
+    mountain.done_par()
     all_sprites.draw(screen)
     all_sprites.update()
     pygame.display.flip()
