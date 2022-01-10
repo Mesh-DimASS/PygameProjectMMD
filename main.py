@@ -1,12 +1,14 @@
 import pygame
 import os
 import sys
+import random
 
+spawn_flag = False
 pygame.init()
 size = width, height = 1500, 800
 screen = pygame.display.set_mode(size)
 background_rect = screen.get_rect()
-
+air_x = 0
 font_name = pygame.font.match_font('arial')
 
 
@@ -51,25 +53,6 @@ class Mountain(pygame.sprite.Sprite):
         draw_text(screen, 'Survivors:' + str(self.done), 18, width / 2, 10)
 
 
-class Parachutist(pygame.sprite.Sprite):
-    image = load_image("parach.png", -1)
-
-    def __init__(self, pos, mountain):
-        super().__init__(all_sprites)
-        self.image = Parachutist.image
-        self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = pos[0] - 100
-        self.rect.y = pos[1] - 70
-
-    def update(self):
-        if not pygame.sprite.collide_mask(self, mountain):
-            self.rect = self.rect.move(0, 1)
-        else:
-            mountain.done += 1
-            self.kill()
-
-
 class Airplane(pygame.sprite.Sprite):
     image = load_image("airplane.png", -1)
 
@@ -82,9 +65,30 @@ class Airplane(pygame.sprite.Sprite):
 
     def update(self):
         self.rect = self.rect.move(5, 0)
-        if self.rect.center[0] > 2000:
+        if self.rect.bottomleft[0] % 100 == 0 and self.rect.bottomleft[0] < 1000:
+            Parachutist(self.rect.bottomleft[0], mountain)
+        if self.rect.center[0] > 4000:
             self.rect.x = 0
             self.rect.y = 0
+
+
+class Parachutist(pygame.sprite.Sprite):
+    image = load_image("parach.png", -1)
+
+    def __init__(self, air_x, mountain):
+        super().__init__(all_sprites)
+        self.image = Parachutist.image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = air_x
+        self.rect.y = random.choice(range(10))
+
+    def update(self):
+        if not pygame.sprite.collide_mask(self, mountain):
+            self.rect = self.rect.move(0, 1)
+        else:
+            mountain.done += 1
+            self.kill()
 
 
 def terminate():
@@ -131,8 +135,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            Parachutist(event.pos, mountain)
+
     clock.tick(fps)
     screen.fill((0, 191, 255))
     mountain.done_par()
