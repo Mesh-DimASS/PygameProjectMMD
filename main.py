@@ -72,6 +72,20 @@ class Airplane(pygame.sprite.Sprite):
             self.rect.y = 0
 
 
+class Gun(pygame.sprite.Sprite):
+    image = load_image("gun.png", -1)
+
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.x = 720
+        self.rect.y = 600
+        self.image = Gun.image
+
+    def update(self):
+        pass
+
+
 class Parachutist(pygame.sprite.Sprite):
     image = load_image("parach.png", -1)
 
@@ -130,6 +144,7 @@ running = True
 clock = pygame.time.Clock()
 fps = 60
 start_screen()
+Gun()
 Airplane()
 while running:
     for event in pygame.event.get():
