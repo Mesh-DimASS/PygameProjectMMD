@@ -66,7 +66,7 @@ class Airplane(pygame.sprite.Sprite):
     def update(self):
         self.rect = self.rect.move(5, 0)
         if self.rect.bottomleft[0] % 100 == 0 and self.rect.bottomleft[0] < 1000:
-            Parachutist(self.rect.bottomleft[0], mountain)
+            Parachutist(self.rect.bottomleft[0])
         if self.rect.center[0] > 4000:
             self.rect.x = 0
             self.rect.y = 0
@@ -78,18 +78,17 @@ class Gun(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
         self.rect = self.image.get_rect()
-        self.rect.x = 720
         self.rect.y = 600
         self.image = Gun.image
 
     def update(self):
-        pass
+        self.rect.x = pygame.mouse.get_pos()[0] - 71
 
 
 class Parachutist(pygame.sprite.Sprite):
     image = load_image("parach.png", -1)
 
-    def __init__(self, air_x, mountain):
+    def __init__(self, air_x):
         super().__init__(all_sprites)
         self.image = Parachutist.image
         self.rect = self.image.get_rect()
@@ -142,15 +141,14 @@ all_sprites = pygame.sprite.Group()
 mountain = Mountain()
 running = True
 clock = pygame.time.Clock()
-fps = 60
+fps = 30
 start_screen()
-Gun()
 Airplane()
+Gun()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
     clock.tick(fps)
     screen.fill((0, 191, 255))
     mountain.done_par()
