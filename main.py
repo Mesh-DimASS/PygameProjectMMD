@@ -65,7 +65,7 @@ class Airplane(pygame.sprite.Sprite):
 
     def update(self):
         self.rect = self.rect.move(5, 0)
-        if self.rect.bottomleft[0] % 100 == 0 and self.rect.bottomleft[0] < 1000:
+        if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
             Parachutist(self.rect.bottomleft[0])
         if self.rect.center[0] > 4000:
             self.rect.x = 0
@@ -93,8 +93,8 @@ class Parachutist(pygame.sprite.Sprite):
         self.image = Parachutist.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = air_x
-        self.rect.y = random.choice(range(10))
+        self.rect.x = air_x + random.choice(range(-200, 10))
+        self.rect.y = random.choice(range(100))
 
     def update(self):
         if not pygame.sprite.collide_mask(self, mountain):
