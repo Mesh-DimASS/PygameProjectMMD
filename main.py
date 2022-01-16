@@ -67,9 +67,48 @@ class Airplane(pygame.sprite.Sprite):
         self.rect = self.rect.move(5, 0)
         if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
             Parachutist(self.rect.bottomleft[0])
+
         if self.rect.center[0] > 4000:
             self.rect.x = 0
             self.rect.y = 0
+
+
+class CaughtParach(pygame.sprite.Sprite):
+    image = load_image("kil_par.png", -1)
+
+    def __init__(self, par_coord):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = par_coord
+        self.image = CaughtParach.image
+
+    def update(self):
+        if not pygame.sprite.collide_mask(self, mountain):
+            self.rect = self.rect.move(0, 10)
+        else:
+            mountain.done += 1
+            self.kill()
+
+
+class Net(pygame.sprite.Sprite):
+    image = load_image("web.png", -1)
+
+    def __init__(self, gun_x):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.y = 600
+        self.image = Net.image
+        self.rect.x = gun_x - 46
+        self.rect.y = 540
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self):
+        self.rect = self.rect.move(0, -10)
+        for sprite in parach_squad:
+            if pygame.sprite.collide_mask(self, sprite):
+                self.kill()
+                CaughtParach((sprite.rect.x, sprite.rect.y))
+                sprite.kill()
 
 
 class Gun(pygame.sprite.Sprite):
@@ -95,6 +134,7 @@ class Parachutist(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = air_x + random.choice(range(-200, 10))
         self.rect.y = random.choice(range(100))
+        parach_squad.add(self)
 
     def update(self):
         if not pygame.sprite.collide_mask(self, mountain):
@@ -138,6 +178,7 @@ def start_screen():
 
 
 all_sprites = pygame.sprite.Group()
+parach_squad = pygame.sprite.Group()
 mountain = Mountain()
 running = True
 clock = pygame.time.Clock()
@@ -149,6 +190,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            Net(event.pos[0])
     clock.tick(fps)
     screen.fill((0, 191, 255))
     mountain.done_par()
