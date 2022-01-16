@@ -51,7 +51,7 @@ class Mountain(pygame.sprite.Sprite):
 
     def done_par(self):
         screen.blit(screen, background_rect)
-        draw_text(screen, 'Survivors:' + str(self.done), 18, width / 2, 10)
+        draw_text(screen, 'Выжившие:' + str(self.done), 35, width / 2, 10)
 
 
 class Airplane(pygame.sprite.Sprite):
@@ -144,7 +144,7 @@ def pause_screen():
                 if event.type == pygame.QUIT:
                     terminate()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    pygame.mixer.music.play(loops=-1)
+                    pygame.mixer.music.set_volume(0.4)
                     return
                 pygame.display.flip()
                 clock.tick(fps)
@@ -201,7 +201,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            pygame.mixer.music.stop()
+            pygame.mixer.music.set_volume(0)
             pause_screen()
     clock.tick(fps)
     screen.fill((0, 191, 255))
