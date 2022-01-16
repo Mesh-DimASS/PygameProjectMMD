@@ -2,6 +2,7 @@ import pygame
 import os
 import sys
 import random
+from os import path
 
 spawn_flag = False
 pygame.init()
@@ -104,9 +105,47 @@ class Parachutist(pygame.sprite.Sprite):
             self.kill()
 
 
+class Cursor(pygame.sprite.Sprite):
+    image = load_image("aim.png", -1)
+
+    def __init__(self):
+        super().__init__(mouse_sprite)
+        self.image = Cursor.image
+        self.rect = self.image.get_rect()
+        pygame.mouse.set_visible(False)
+
+    def update(self):
+        self.rect.center = (pygame.mouse.get_pos()[0] + 5, pygame.mouse.get_pos()[1])
+
+
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def pause_screen():
+    with open(os.path.join('data', 'pause_text'), encoding="UTF-8") as a:
+        pause_text = list(map(str.strip, a.readlines()))
+        fon = pygame.transform.scale(load_image('fon.jpg'), size)
+        screen.blit(fon, (0, 0))
+        font = pygame.font.Font(None, 70)
+        text_coord = 30
+        for line in pause_text:
+            string_rendered = font.render(line, 1, pygame.Color('black'))
+            pause_rect = string_rendered.get_rect()
+            text_coord += 10
+            pause_rect.top = text_coord
+            pause_rect.x = 520
+            text_coord += pause_rect.height + 50
+            screen.blit(string_rendered, pause_rect)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                    return
+                pygame.display.flip()
+                clock.tick(fps)
 
 
 def start_screen():
@@ -126,17 +165,26 @@ def start_screen():
         text_coord += intro_rect.height + 50
         screen.blit(string_rendered, intro_rect)
 
+    snd_dir = path.join(path.dirname(__file__), 'snd')
+    pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(loops=-1)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load(path.join(snd_dir, 'rock2.mp3'))
+                pygame.mixer.music.set_volume(0.4)
+                pygame.mixer.music.play(loops=-1)
                 return
         pygame.display.flip()
         clock.tick(fps)
 
 
+mouse_sprite = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 mountain = Mountain()
 running = True
@@ -145,13 +193,19 @@ fps = 30
 start_screen()
 Airplane()
 Gun()
+Cursor()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            pygame.mixer.music.stop()
+            pause_screen()
     clock.tick(fps)
     screen.fill((0, 191, 255))
     mountain.done_par()
     all_sprites.draw(screen)
     all_sprites.update()
+    mouse_sprite.draw(screen)
+    mouse_sprite.update()
     pygame.display.flip()
