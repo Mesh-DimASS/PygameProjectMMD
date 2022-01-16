@@ -2,6 +2,7 @@ import pygame
 import os
 import sys
 import random
+from os import path
 
 spawn_flag = False
 pygame.init()
@@ -109,6 +110,31 @@ def terminate():
     sys.exit()
 
 
+def pause_screen():
+    with open(os.path.join('data', 'pause_text'), encoding="UTF-8") as a:
+        pause_text = list(map(str.strip, a.readlines()))
+        fon = pygame.transform.scale(load_image('fon.jpg'), size)
+        screen.blit(fon, (0, 0))
+        font = pygame.font.Font(None, 70)
+        text_coord = 30
+        for line in pause_text:
+            string_rendered = font.render(line, 1, pygame.Color('black'))
+            pause_rect = string_rendered.get_rect()
+            text_coord += 10
+            pause_rect.top = text_coord
+            pause_rect.x = 520
+            text_coord += pause_rect.height + 50
+            screen.blit(string_rendered, pause_rect)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                    return
+                pygame.display.flip()
+                clock.tick(fps)
+
+
 def start_screen():
     with open(os.path.join('data', 'intro_text'), encoding="UTF-8") as a:
         intro_text = list(map(str.strip, a.readlines()))
@@ -126,12 +152,20 @@ def start_screen():
         text_coord += intro_rect.height + 50
         screen.blit(string_rendered, intro_rect)
 
+    snd_dir = path.join(path.dirname(__file__), 'snd')
+    pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(loops=-1)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load(path.join(snd_dir, 'rock2.mp3'))
+                pygame.mixer.music.set_volume(0.4)
+                pygame.mixer.music.play(loops=-1)
                 return
         pygame.display.flip()
         clock.tick(fps)
@@ -149,6 +183,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            pygame.mixer.music.stop()
+            pause_screen()
     clock.tick(fps)
     screen.fill((0, 191, 255))
     mountain.done_par()
