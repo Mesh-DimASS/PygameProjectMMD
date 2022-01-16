@@ -104,19 +104,6 @@ class Parachutist(pygame.sprite.Sprite):
             self.kill()
 
 
-class Cursor(pygame.sprite.Sprite):
-    image = load_image("aim.png", -1)
-
-    def __init__(self):
-        super().__init__(mouse_sprite)
-        self.image = Cursor.image
-        self.rect = self.image.get_rect()
-        pygame.mouse.set_visible(False)
-
-    def update(self):
-        self.rect.center = (pygame.mouse.get_pos()[0] + 5, pygame.mouse.get_pos()[1])
-
-
 def terminate():
     pygame.quit()
     sys.exit()
@@ -150,7 +137,6 @@ def start_screen():
         clock.tick(fps)
 
 
-mouse_sprite = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 mountain = Mountain()
 running = True
@@ -159,15 +145,12 @@ fps = 30
 start_screen()
 Airplane()
 Gun()
-Cursor()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    screen.fill((0, 191, 255))
     clock.tick(fps)
-    mouse_sprite.draw(screen)
-    mouse_sprite.update()
+    screen.fill((0, 191, 255))
     mountain.done_par()
     all_sprites.draw(screen)
     all_sprites.update()
