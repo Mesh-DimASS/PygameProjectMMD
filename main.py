@@ -166,6 +166,7 @@ def terminate():
 
 
 def pause_screen():
+    pygame.mouse.set_visible(True)
     with open(os.path.join('data', 'pause_text'), encoding="UTF-8") as a:
         pause_text = list(map(str.strip, a.readlines()))
         fon = pygame.transform.scale(load_image('fon.jpg'), size)
@@ -173,13 +174,31 @@ def pause_screen():
         font = pygame.font.Font(None, 70)
         text_coord = 30
         for line in pause_text:
-            string_rendered = font.render(line, 1, pygame.Color('black'))
+            string_rendered = font.render(line, 2, pygame.Color('black'))
             pause_rect = string_rendered.get_rect()
             text_coord += 10
             pause_rect.top = text_coord
             pause_rect.x = 520
             text_coord += pause_rect.height + 50
             screen.blit(string_rendered, pause_rect)
+        font = pygame.font.Font(None, 50)
+        text = font.render("Начать заново", True, (100, 255, 100))
+        text_x = 50
+        text_y = 550
+        text_w = text.get_width()
+        text_h = text.get_height()
+        pygame.draw.rect(screen, (255, 255, 255), (text_x - 10, text_y - 10,
+                                                   text_w + 20, text_h + 20), 0)
+        screen.blit(text, (text_x, text_y))
+
+        text = font.render("Продолжить", True, (100, 255, 100))
+        text_x = 1250
+        text_y = 550
+        text_w = text.get_width()
+        text_h = text.get_height()
+        pygame.draw.rect(screen, (255, 255, 255), (text_x - 10, text_y - 10,
+                                                   text_w + 20, text_h + 20), 0)
+        screen.blit(text, (text_x, text_y))
 
         while True:
             for event in pygame.event.get():
@@ -187,6 +206,8 @@ def pause_screen():
                     terminate()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     pygame.mixer.music.set_volume(0.4)
+                    pygame.mouse.set_visible(False)
+                if event.type == pygame.MOUSEBUTTONDOWN:
                     return
                 pygame.display.flip()
                 clock.tick(fps)
