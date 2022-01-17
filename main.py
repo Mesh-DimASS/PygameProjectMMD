@@ -261,10 +261,13 @@ mountain = Mountain()
 running = True
 clock = pygame.time.Clock()
 fps = 30
+shots = 0
+reloading = False
 start_screen()
 Airplane()
 Gun()
 Cursor()
+time = 0
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -273,17 +276,23 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 Net(event.pos[0])
                 shots += 1
-        if shots > 10:
-            reload()
+                reloading = False
+        if shots == 11:
+            reloading = True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             pygame.mixer.music.set_volume(0)
             pause_screen()
-
+    time += 1
     clock.tick(fps)
+    if time % 240 == 0:
+        shots = 0
+        reloading = False
     screen.fill((0, 191, 255))
     mountain.done_par()
     all_sprites.draw(screen)
     all_sprites.update()
     mouse_sprite.draw(screen)
     mouse_sprite.update()
+    if reloading:
+        reload()
     pygame.display.flip()
