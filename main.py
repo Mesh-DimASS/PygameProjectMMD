@@ -11,6 +11,7 @@ screen = pygame.display.set_mode(size)
 background_rect = screen.get_rect()
 air_x = 0
 font_name = pygame.font.match_font('arial')
+shots = 0
 
 
 def draw_text(surf, text, size, x, y):
@@ -48,10 +49,12 @@ class Mountain(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.bottom = height
         self.done = 0
+        self.kil = 0
 
     def done_par(self):
         screen.blit(screen, background_rect)
-        draw_text(screen, 'Survivors:' + str(self.done), 18, width / 2, 10)
+        draw_text(screen, 'Выжившие:' + str(self.done), 30, 830, 10)
+        draw_text(screen, 'Подбитые:' + str(self.kil), 30, 670, 10)
 
 
 class Airplane(pygame.sprite.Sprite):
@@ -68,9 +71,47 @@ class Airplane(pygame.sprite.Sprite):
         self.rect = self.rect.move(5, 0)
         if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
             Parachutist(self.rect.bottomleft[0])
-        if self.rect.center[0] > 4000:
+
+        if self.rect.center[0] > 2000:
             self.rect.x = 0
             self.rect.y = 0
+
+
+class CaughtParach(pygame.sprite.Sprite):
+    image = load_image("kil_par.png", -1)
+
+    def __init__(self, par_coord):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = par_coord
+        self.image = CaughtParach.image
+
+    def update(self):
+        if not pygame.sprite.collide_mask(self, mountain):
+            self.rect = self.rect.move(0, 12)
+        else:
+            mountain.kil += 1
+            self.kill()
+
+
+class Net(pygame.sprite.Sprite):
+    image = load_image("web.png", -1)
+
+    def __init__(self, gun_x):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.image = Net.image
+        self.rect.x = gun_x - 20
+        self.rect.y = 540
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self):
+        self.rect = self.rect.move(0, -10)
+        for sprite in parach_squad:
+            if pygame.sprite.collide_mask(self, sprite):
+                self.kill()
+                CaughtParach((sprite.rect.x, sprite.rect.y))
+                sprite.kill()
 
 
 class Gun(pygame.sprite.Sprite):
@@ -96,10 +137,11 @@ class Parachutist(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = air_x + random.choice(range(-200, 10))
         self.rect.y = random.choice(range(100))
+        parach_squad.add(self)
 
     def update(self):
         if not pygame.sprite.collide_mask(self, mountain):
-            self.rect = self.rect.move(0, 1)
+            self.rect = self.rect.move(0, 2)
         else:
             mountain.done += 1
             self.kill()
@@ -143,6 +185,8 @@ def pause_screen():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     terminate()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    pygame.mixer.music.set_volume(0.4)
                     return
                 pygame.display.flip()
                 clock.tick(fps)
@@ -184,8 +228,14 @@ def start_screen():
         clock.tick(fps)
 
 
+def reload():
+    screen.blit(screen, background_rect)
+    draw_text(screen, 'Перезарядка орудия...', 30, 1300, 600)
+
+
 mouse_sprite = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
+parach_squad = pygame.sprite.Group()
 mountain = Mountain()
 running = True
 clock = pygame.time.Clock()
@@ -198,11 +248,18 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if shots <= 10:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                Net(event.pos[0])
+                shots += 1
+        if shots > 10:
+            reload()
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            pygame.mixer.music.stop()
+            pygame.mixer.music.set_volume(0)
             pause_screen()
     clock.tick(fps)
     screen.fill((0, 191, 255))
+    # reload()
     mountain.done_par()
     all_sprites.draw(screen)
     all_sprites.update()
