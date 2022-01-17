@@ -259,7 +259,6 @@ while running:
             pause_screen()
     clock.tick(fps)
     screen.fill((0, 191, 255))
-    # reload()
     mountain.done_par()
     all_sprites.draw(screen)
     all_sprites.update()
