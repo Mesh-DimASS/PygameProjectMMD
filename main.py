@@ -257,6 +257,7 @@ while running:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             pygame.mixer.music.set_volume(0)
             pause_screen()
+
     clock.tick(fps)
     screen.fill((0, 191, 255))
     mountain.done_par()
