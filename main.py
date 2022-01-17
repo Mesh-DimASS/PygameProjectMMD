@@ -53,7 +53,7 @@ class Mountain(pygame.sprite.Sprite):
 
     def done_par(self):
         screen.blit(screen, background_rect)
-        draw_text(screen, 'Выжившие:' + str(self.done), 30, 830, 10)
+        draw_text(screen, 'Выжившие:' + str(self.done), 30, 880, 10)
         draw_text(screen, 'Подбитые:' + str(self.kil), 30, 670, 10)
 
 
@@ -68,9 +68,11 @@ class Airplane(pygame.sprite.Sprite):
         self.image = Airplane.image
 
     def update(self):
-        self.rect = self.rect.move(5, 0)
+        self.rect = self.rect.move(10, 0)
         if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
             Parachutist(self.rect.bottomleft[0])
+            if time > 600 and random.choice(range(10)) == 1:
+                Bomb(self.rect.bottomleft[0])
 
         if self.rect.center[0] > 2000:
             self.rect.x = 0
@@ -92,6 +94,52 @@ class CaughtParach(pygame.sprite.Sprite):
         else:
             mountain.kil += 1
             self.kill()
+
+
+class Boom(pygame.sprite.Sprite):
+    image = load_image("Boom.png", -1)
+
+    def __init__(self, par_coord):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = par_coord
+        self.image = Boom.image
+
+    def update(self):
+        if time % 60 == 0:
+            self.kill()
+
+
+class Bomb(pygame.sprite.Sprite):
+    image = load_image("bomb.png", -1)
+
+    def __init__(self, air_x):
+        super().__init__(all_sprites)
+        self.image = Bomb.image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = air_x + random.choice(range(-200, 10))
+        self.rect.y = random.choice(range(100))
+
+    def update(self):
+        if not pygame.sprite.collide_mask(self, mountain):
+            self.rect = self.rect.move(0, 10)
+        elif pygame.sprite.collide_mask(self, mountain):
+            Boom((self.rect.x, self.rect.y))
+            self.kill()
+        for sprite in friendly_buildings_squad:
+            if pygame.sprite.collide_mask(self, sprite):
+                DeadGun((self.rect.x, self.rect.y))
+                self.kill()
+
+
+class DeadGun(pygame.sprite.Sprite):
+    #image = load_image(".png", -1)
+    def __init__(self, par_coord):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = par_coord
+        self.image = DeadGun.image
 
 
 class Net(pygame.sprite.Sprite):
@@ -122,6 +170,7 @@ class Gun(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.y = 600
         self.image = Gun.image
+        friendly_buildings_squad.add(self)
 
     def update(self):
         self.rect.x = pygame.mouse.get_pos()[0] - 71
@@ -141,7 +190,7 @@ class Parachutist(pygame.sprite.Sprite):
 
     def update(self):
         if not pygame.sprite.collide_mask(self, mountain):
-            self.rect = self.rect.move(0, 2)
+            self.rect = self.rect.move(0, 5)
         else:
             mountain.done += 1
             self.kill()
@@ -257,6 +306,7 @@ def reload():
 mouse_sprite = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 parach_squad = pygame.sprite.Group()
+friendly_buildings_squad = pygame.sprite.Group()
 mountain = Mountain()
 running = True
 clock = pygame.time.Clock()
