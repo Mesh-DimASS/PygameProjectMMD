@@ -228,35 +228,20 @@ def pause_screen():
             text_coord += 10
             pause_rect.top = text_coord
             pause_rect.x = 520
-            text_coord += pause_rect.height + 50
+            text_coord += pause_rect.height + 30
             screen.blit(string_rendered, pause_rect)
-        font = pygame.font.Font(None, 50)
-        text = font.render("Начать заново", True, (100, 255, 100))
-        text_x = 50
-        text_y = 550
-        text_w = text.get_width()
-        text_h = text.get_height()
-        pygame.draw.rect(screen, (255, 255, 255), (text_x - 10, text_y - 10,
-                                                   text_w + 20, text_h + 20), 0)
-        screen.blit(text, (text_x, text_y))
-
-        text = font.render("Продолжить", True, (100, 255, 100))
-        text_x = 1250
-        text_y = 550
-        text_w = text.get_width()
-        text_h = text.get_height()
-        pygame.draw.rect(screen, (255, 255, 255), (text_x - 10, text_y - 10,
-                                                   text_w + 20, text_h + 20), 0)
-        screen.blit(text, (text_x, text_y))
-
+            pygame.mouse.set_visible(False)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     terminate()
+
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     pygame.mixer.music.set_volume(0.4)
-                    pygame.mouse.set_visible(False)
+                    #pygame.mouse.set_visible(False)
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    pygame.mixer.music.set_volume(0.4)
                     return
                 pygame.display.flip()
                 clock.tick(fps)
@@ -300,25 +285,26 @@ def start_screen():
 
 def end_screen_win():
     with open(os.path.join('data', 'win_text'), encoding="UTF-8") as a:
-        intro_text = list(map(str.strip, a.readlines()))
+        win_text = list(map(str.strip, a.readlines()))
 
     fon = pygame.transform.scale(load_image('win_fon.jpg'), size)
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
     text_coord = 100
-    for line in intro_text:
+    for line in win_text:
         string_rendered = font.render(line, 1, pygame.Color('black'))
-        intro_rect = string_rendered.get_rect()
+        win_rect = string_rendered.get_rect()
         text_coord += 100
-        intro_rect.top = text_coord
-        intro_rect.x = 400
-        text_coord += intro_rect.height + 5
-        screen.blit(string_rendered, intro_rect)
+        win_rect.top = text_coord
+        win_rect.x = 400
+        text_coord += win_rect.height + 5
+        screen.blit(string_rendered, win_rect)
 
     snd_dir = path.join(path.dirname(__file__), 'snd')
     pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(loops=-1)
+    pygame.mouse.set_visible(True)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -329,25 +315,26 @@ def end_screen_win():
 
 def end_screen_lose():
     with open(os.path.join('data', 'lose_text'), encoding="UTF-8") as a:
-        intro_text = list(map(str.strip, a.readlines()))
+        lose_text = list(map(str.strip, a.readlines()))
 
     fon = pygame.transform.scale(load_image('lose_fon.jpg'), size)
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
     text_coord = 100
-    for line in intro_text:
+    for line in lose_text:
         string_rendered = font.render(line, 1, pygame.Color('black'))
-        intro_rect = string_rendered.get_rect()
+        lose_rect = string_rendered.get_rect()
         text_coord += 100
-        intro_rect.top = text_coord
-        intro_rect.x = 400
-        text_coord += intro_rect.height + 5
-        screen.blit(string_rendered, intro_rect)
+        lose_rect.top = text_coord
+        lose_rect.x = 400
+        text_coord += lose_rect.height + 5
+        screen.blit(string_rendered, lose_rect)
 
     snd_dir = path.join(path.dirname(__file__), 'snd')
     pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(loops=-1)
+    pygame.mouse.set_visible(True)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
