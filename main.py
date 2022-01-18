@@ -71,7 +71,7 @@ class Airplane(pygame.sprite.Sprite):
         self.rect = self.rect.move(10, 0)
         if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
             Parachutist(self.rect.bottomleft[0])
-            if time > 600 and random.choice(range(10)) == 1:
+            if time > 100 and random.choice(range(10)) == 1:
                 Bomb(self.rect.bottomleft[0])
 
         if self.rect.center[0] > 2000:
@@ -118,28 +118,33 @@ class Bomb(pygame.sprite.Sprite):
         self.image = Bomb.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = air_x + random.choice(range(-200, 10))
-        self.rect.y = random.choice(range(100))
+        self.rect.x = air_x + random.choice(range(1, 10))
+        self.rect.y = random.choice(range(10))
 
     def update(self):
         if not pygame.sprite.collide_mask(self, mountain):
-            self.rect = self.rect.move(0, 10)
+            self.rect = self.rect.move(0, 12)
         elif pygame.sprite.collide_mask(self, mountain):
             Boom((self.rect.x, self.rect.y))
             self.kill()
         for sprite in friendly_buildings_squad:
             if pygame.sprite.collide_mask(self, sprite):
-                DeadGun((self.rect.x, self.rect.y))
+                draw_text(screen, 'ВАС ПОДБИЛИ!', 400, 880, 10)
+                pygame.time.delay(4000)
                 self.kill()
+                end_screen_lose()
 
 
-class DeadGun(pygame.sprite.Sprite):
-    #image = load_image(".png", -1)
-    def __init__(self, par_coord):
-        super().__init__(all_sprites)
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = par_coord
-        self.image = DeadGun.image
+#class DeadGun(pygame.sprite.Sprite):
+    #image = load_image("destr_gun.png", -1)
+
+    #def __init__(self, par_coord):
+        #super().__init__(all_sprites)
+        #self.image = DeadGun.image
+        #self.rect = self.image.get_rect()
+        #self.rect.x, self.rect.y = par_coord
+        #pygame.time.delay(4000)
+        #end_screen_lose()
 
 
 class Net(pygame.sprite.Sprite):
@@ -170,6 +175,7 @@ class Gun(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.y = 600
         self.image = Gun.image
+        self.mask = pygame.mask.from_surface(self.image)
         friendly_buildings_squad.add(self)
 
     def update(self):
@@ -331,7 +337,7 @@ def end_screen_lose():
         screen.blit(string_rendered, lose_rect)
 
     snd_dir = path.join(path.dirname(__file__), 'snd')
-    pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
+    pygame.mixer.music.load(path.join(snd_dir, 'lose.mp3'))
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(loops=-1)
     pygame.mouse.set_visible(True)
@@ -390,9 +396,10 @@ while running:
     mouse_sprite.update()
     if reloading:
         reload()
-    if mountain.kil > 30:
+    if mountain.kil == 50:
         end_screen_win()
 
-    if mountain.done > 10:
+    if mountain.done == 10:
         end_screen_lose()
+
     pygame.display.flip()
