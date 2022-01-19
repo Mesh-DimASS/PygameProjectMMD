@@ -311,9 +311,9 @@ def pause_screen():
 
 
 def end_screen_win():
-    con = sqlite3.connect('history_tab.db')
+    con = sqlite3.connect('history.db')
     cur = con.cursor()
-    cur.execute("""INSERT INTO playing_history (day, time, score) VALUES (?, ?
+    cur.execute("""INSERT INTO hist_tab (day, time, score) VALUES (?, ?
                 , ?)""", (
         dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.kil))
     con.commit()
@@ -345,9 +345,9 @@ def end_screen_win():
 
 
 def end_screen_lose():
-    con = sqlite3.connect('history_tab.db')
+    con = sqlite3.connect('history.db')
     cur = con.cursor()
-    cur.execute("""INSERT INTO playing_history (day, time, score) VALUES (?, ?
+    cur.execute("""INSERT INTO hist_tab (day, time, score) VALUES (?, ?
             , ?)""", (
         dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.kil))
     con.commit()
