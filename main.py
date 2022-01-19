@@ -74,11 +74,11 @@ class Airplane(pygame.sprite.Sprite):
         self.rect = self.rect.move(10, 0)
         if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
             Parachutist(self.rect.bottomleft[0])
-            if time < 400 and random.choice(range(10)) == 3:
+            if time < 400 and random.choice(range(10)) in range(2):
                 Bomb(self.rect.bottomleft[0])
-            if 800 > time > 600 and random.choice(range(10)) == 5:
+            if 800 > time > 600 and random.choice(range(10)) in range(4):
                 Bomb(self.rect.bottomleft[0])
-            if time > 800 and random.choice(range(10)) == 8:
+            if time > 800 and random.choice(range(10)) in range(7):
                 Bomb(self.rect.bottomleft[0])
 
         if self.rect.center[0] > 2000:
@@ -186,6 +186,44 @@ class Gun(pygame.sprite.Sprite):
         self.rect.x = pygame.mouse.get_pos()[0] - 71
 
 
+class AnimatedSprite(pygame.sprite.Sprite):
+    img = load_image('animated_helicopter.png')
+
+    def __init__(self, img, columns, rows):
+        super().__init__(all_sprites)
+        self.frames = []
+        self.cut_sheet(img, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(0, 0)
+
+    def cut_sheet(self, img, columns, rows):
+        self.rect = pygame.Rect(0, 0, img.get_width() // columns,
+                                img.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(img.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self):
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(10, 0)
+        if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
+            Parachutist(self.rect.bottomleft[0])
+            if time < 400 and random.choice(range(10)) in range(2):
+                Bomb(self.rect.bottomleft[0])
+            if 800 > time > 600 and random.choice(range(10)) in range(4):
+                Bomb(self.rect.bottomleft[0])
+            if time > 800 and random.choice(range(10)) in range(7):
+                Bomb(self.rect.bottomleft[0])
+
+        if self.rect.center[0] > 2000:
+            self.rect.x = 0
+            self.rect.y = 0
+
+
 class Parachutist(pygame.sprite.Sprite):
     image = load_image("parach.png", -1)
 
@@ -273,15 +311,14 @@ def pause_screen():
 
 
 def end_screen_win():
-    with open(os.path.join('data', 'win_text'), encoding="UTF-8") as a:
-        intro_text = list(map(str.strip, a.readlines()))
     con = sqlite3.connect('history_tab.db')
     cur = con.cursor()
-    cur.execute("""INSERT INTO playing_history (date, time, score) VALUES (?, ?
+    cur.execute("""INSERT INTO playing_history (day, time, score) VALUES (?, ?
                 , ?)""", (
-        dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.done))
+        dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.kil))
     con.commit()
-
+    with open(os.path.join('data', 'win_text'), encoding="UTF-8") as a:
+        intro_text = list(map(str.strip, a.readlines()))
     fon = pygame.transform.scale(load_image('win_fon.jpg'), size)
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
@@ -308,15 +345,14 @@ def end_screen_win():
 
 
 def end_screen_lose():
-    with open(os.path.join('data', 'lose_text'), encoding="UTF-8") as a:
-        intro_text = list(map(str.strip, a.readlines()))
     con = sqlite3.connect('history_tab.db')
     cur = con.cursor()
-    cur.execute("""INSERT INTO playing_history (date, time, score) VALUES (?, ?
+    cur.execute("""INSERT INTO playing_history (day, time, score) VALUES (?, ?
             , ?)""", (
-        dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.done))
+        dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.kil))
     con.commit()
-
+    with open(os.path.join('data', 'lose_text'), encoding="UTF-8") as a:
+        intro_text = list(map(str.strip, a.readlines()))
     fon = pygame.transform.scale(load_image('lose_fon.jpg'), size)
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
@@ -394,9 +430,9 @@ fps = 30
 shots = 0
 reloading = False
 start_screen()
-Airplane()
 Gun()
 Cursor()
+AnimatedSprite(load_image("animated_helicopter.png", -1), 1, 4)
 time = 0
 while running:
     for event in pygame.event.get():
@@ -428,7 +464,7 @@ while running:
     if mountain.kil == 50:
         end_screen_win()
 
-    if mountain.done == 10:
+    if mountain.done == 5:
         end_screen_lose()
     pygame.display.flip()
     pygame.display.flip()
