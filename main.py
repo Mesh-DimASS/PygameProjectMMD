@@ -451,9 +451,9 @@ while running:
     mouse_sprite.update()
     if reloading:
         reload()
-    if mountain.kil == 60:
+    if mountain.kil == 100:
         end_screen_win()
 
-    if mountain.done == 15:
+    if mountain.done == 50:
         end_screen_lose()
     pygame.display.flip()
