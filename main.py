@@ -336,6 +336,8 @@ def end_screen_win():
     pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(loops=-1)
+    pygame.mouse.set_visible(True)
+    pygame.mouse.set_visible(True)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -370,6 +372,8 @@ def end_screen_lose():
     pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(loops=-1)
+    pygame.mouse.set_visible(True)
+    pygame.mouse.set_visible(True)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
