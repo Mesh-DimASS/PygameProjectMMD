@@ -1,6 +1,2 @@
 pygame 2.1.2
 python 3.8
-os
-sys
-random
-from os import path

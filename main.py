@@ -3,6 +3,9 @@ import os
 import sys
 import random
 from os import path
+import sqlite3
+import datetime as dt
+import time
 
 spawn_flag = False
 pygame.init()
@@ -71,7 +74,11 @@ class Airplane(pygame.sprite.Sprite):
         self.rect = self.rect.move(10, 0)
         if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
             Parachutist(self.rect.bottomleft[0])
-            if time > 100 and random.choice(range(10)) == 1:
+            if time < 400 and random.choice(range(10)) in range(2):
+                Bomb(self.rect.bottomleft[0])
+            if 800 > time > 600 and random.choice(range(10)) in range(4):
+                Bomb(self.rect.bottomleft[0])
+            if time > 800 and random.choice(range(10)) in range(7):
                 Bomb(self.rect.bottomleft[0])
 
         if self.rect.center[0] > 2000:
@@ -118,33 +125,32 @@ class Bomb(pygame.sprite.Sprite):
         self.image = Bomb.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = air_x + random.choice(range(1, 10))
-        self.rect.y = random.choice(range(10))
+        self.rect.x = air_x + random.choice(range(-200, 10))
+        self.rect.y = random.choice(range(100))
 
     def update(self):
         if not pygame.sprite.collide_mask(self, mountain):
-            self.rect = self.rect.move(0, 12)
+            self.rect = self.rect.move(0, 10)
         elif pygame.sprite.collide_mask(self, mountain):
             Boom((self.rect.x, self.rect.y))
             self.kill()
         for sprite in friendly_buildings_squad:
             if pygame.sprite.collide_mask(self, sprite):
-                draw_text(screen, 'ВАС ПОДБИЛИ!', 400, 880, 10)
-                pygame.time.delay(4000)
+                DeadGun((sprite.rect.x, sprite.rect.y))
                 self.kill()
-                end_screen_lose()
+                sprite.kill()
+                pygame.time.delay(2000)
 
 
-#class DeadGun(pygame.sprite.Sprite):
-    #image = load_image("destr_gun.png", -1)
+class DeadGun(pygame.sprite.Sprite):
+    image = load_image("destr_gun.png", -1)
 
-    #def __init__(self, par_coord):
-        #super().__init__(all_sprites)
-        #self.image = DeadGun.image
-        #self.rect = self.image.get_rect()
-        #self.rect.x, self.rect.y = par_coord
-        #pygame.time.delay(4000)
-        #end_screen_lose()
+    def __init__(self, par_coord):
+        super().__init__(all_sprites)
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = par_coord
+        self.image = DeadGun.image
+        end_screen_lose()
 
 
 class Net(pygame.sprite.Sprite):
@@ -159,7 +165,7 @@ class Net(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
-        self.rect = self.rect.move(0, -10)
+        self.rect = self.rect.move(0, -13)
         for sprite in parach_squad:
             if pygame.sprite.collide_mask(self, sprite):
                 self.kill()
@@ -175,11 +181,48 @@ class Gun(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.y = 600
         self.image = Gun.image
-        self.mask = pygame.mask.from_surface(self.image)
         friendly_buildings_squad.add(self)
 
     def update(self):
         self.rect.x = pygame.mouse.get_pos()[0] - 71
+
+
+class AnimatedSprite(pygame.sprite.Sprite):
+    img = load_image('animated_helicopter.png')
+
+    def __init__(self, img, columns, rows):
+        super().__init__(all_sprites)
+        self.frames = []
+        self.cut_sheet(img, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(0, 0)
+
+    def cut_sheet(self, img, columns, rows):
+        self.rect = pygame.Rect(0, 0, img.get_width() // columns,
+                                img.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(img.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self):
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(10, 0)
+        if self.rect.bottomleft[0] % 200 == 0 and self.rect.bottomleft[0] < 1600:
+            Parachutist(self.rect.bottomleft[0])
+            if time < 400 and random.choice(range(10)) in range(2):
+                Bomb(self.rect.bottomleft[0])
+            if 800 > time > 600 and random.choice(range(10)) in range(4):
+                Bomb(self.rect.bottomleft[0])
+            if time > 800 and random.choice(range(10)) in range(7):
+                Bomb(self.rect.bottomleft[0])
+
+        if self.rect.center[0] > 2000:
+            self.rect.x = 0
+            self.rect.y = 0
 
 
 class Parachutist(pygame.sprite.Sprite):
@@ -253,6 +296,78 @@ def pause_screen():
                 clock.tick(fps)
 
 
+def end_screen_win():
+    con = sqlite3.connect('history.db')
+    cur = con.cursor()
+    cur.execute("""INSERT INTO hist_tab (day, time, score) VALUES (?, ?
+                , ?)""", (
+        dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.kil))
+    con.commit()
+    with open(os.path.join('data', 'win_text'), encoding="UTF-8") as a:
+        intro_text = list(map(str.strip, a.readlines()))
+    fon = pygame.transform.scale(load_image('win_fon.jpg'), size)
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 100
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 100
+        intro_rect.top = text_coord
+        intro_rect.x = 400
+        text_coord += intro_rect.height + 5
+        screen.blit(string_rendered, intro_rect)
+
+    snd_dir = path.join(path.dirname(__file__), 'snd')
+    pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(loops=-1)
+    pygame.mouse.set_visible(True)
+    pygame.mouse.set_visible(True)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+        pygame.display.flip()
+        clock.tick(fps)
+
+
+def end_screen_lose():
+    con = sqlite3.connect('history.db')
+    cur = con.cursor()
+    cur.execute("""INSERT INTO hist_tab (day, time, score) VALUES (?, ?
+            , ?)""", (
+        dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.kil))
+    con.commit()
+    with open(os.path.join('data', 'lose_text'), encoding="UTF-8") as a:
+        intro_text = list(map(str.strip, a.readlines()))
+    fon = pygame.transform.scale(load_image('lose_fon.jpg'), size)
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 100
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 100
+        intro_rect.top = text_coord
+        intro_rect.x = 400
+        text_coord += intro_rect.height + 5
+        screen.blit(string_rendered, intro_rect)
+
+    snd_dir = path.join(path.dirname(__file__), 'snd')
+    pygame.mixer.music.load(path.join(snd_dir, 'lose.mp3'))
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(loops=-1)
+    pygame.mouse.set_visible(True)
+    pygame.mouse.set_visible(True)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+        pygame.display.flip()
+        clock.tick(fps)
+
+
 def start_screen():
     with open(os.path.join('data', 'intro_text'), encoding="UTF-8") as a:
         intro_text = list(map(str.strip, a.readlines()))
@@ -289,66 +404,6 @@ def start_screen():
         clock.tick(fps)
 
 
-def end_screen_win():
-    with open(os.path.join('data', 'win_text'), encoding="UTF-8") as a:
-        win_text = list(map(str.strip, a.readlines()))
-
-    fon = pygame.transform.scale(load_image('win_fon.jpg'), size)
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 100
-    for line in win_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        win_rect = string_rendered.get_rect()
-        text_coord += 100
-        win_rect.top = text_coord
-        win_rect.x = 400
-        text_coord += win_rect.height + 5
-        screen.blit(string_rendered, win_rect)
-
-    snd_dir = path.join(path.dirname(__file__), 'snd')
-    pygame.mixer.music.load(path.join(snd_dir, 'start_music.ogg'))
-    pygame.mixer.music.set_volume(0.4)
-    pygame.mixer.music.play(loops=-1)
-    pygame.mouse.set_visible(True)
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-        pygame.display.flip()
-        clock.tick(fps)
-
-
-def end_screen_lose():
-    with open(os.path.join('data', 'lose_text'), encoding="UTF-8") as a:
-        lose_text = list(map(str.strip, a.readlines()))
-
-    fon = pygame.transform.scale(load_image('lose_fon.jpg'), size)
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 100
-    for line in lose_text:
-        string_rendered = font.render(line, 1, pygame.Color('black'))
-        lose_rect = string_rendered.get_rect()
-        text_coord += 100
-        lose_rect.top = text_coord
-        lose_rect.x = 400
-        text_coord += lose_rect.height + 5
-        screen.blit(string_rendered, lose_rect)
-
-    snd_dir = path.join(path.dirname(__file__), 'snd')
-    pygame.mixer.music.load(path.join(snd_dir, 'lose.mp3'))
-    pygame.mixer.music.set_volume(0.4)
-    pygame.mixer.music.play(loops=-1)
-    pygame.mouse.set_visible(True)
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-        pygame.display.flip()
-        clock.tick(fps)
-
-
 def reload():
     screen.blit(screen, background_rect)
     draw_text(screen, 'Перегрев орудия!!!', 30, 1300, 600)
@@ -365,9 +420,9 @@ fps = 30
 shots = 0
 reloading = False
 start_screen()
-Airplane()
 Gun()
 Cursor()
+AnimatedSprite(load_image("animated_helicopter.png", -1), 1, 4)
 time = 0
 while running:
     for event in pygame.event.get():
@@ -396,10 +451,9 @@ while running:
     mouse_sprite.update()
     if reloading:
         reload()
-    if mountain.kil == 50:
+    if mountain.kil == 60:
         end_screen_win()
 
-    if mountain.done == 10:
+    if mountain.done == 15:
         end_screen_lose()
-
     pygame.display.flip()
