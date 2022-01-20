@@ -7,6 +7,8 @@ import sqlite3
 import datetime as dt
 import time
 
+import pyinstaller as pyinstaller
+
 spawn_flag = False
 pygame.init()
 size = width, height = 1500, 800
