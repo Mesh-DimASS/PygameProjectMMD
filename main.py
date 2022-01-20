@@ -267,7 +267,7 @@ def pause_screen():
     pygame.mouse.set_visible(True)
     with open(os.path.join('data', 'pause_text'), encoding="UTF-8") as a:
         pause_text = list(map(str.strip, a.readlines()))
-        fon = pygame.transform.scale(load_image('fon.jpg'), size)
+        fon = pygame.transform.scale(load_image('pause.jpg'), size)
         screen.blit(fon, (0, 0))
         font = pygame.font.Font(None, 70)
         text_coord = 30
@@ -276,33 +276,33 @@ def pause_screen():
             pause_rect = string_rendered.get_rect()
             text_coord += 10
             pause_rect.top = text_coord
-            pause_rect.x = 520
+            pause_rect.x = 540
             text_coord += pause_rect.height + 30
             screen.blit(string_rendered, pause_rect)
             pygame.mouse.set_visible(False)
+        font = pygame.font.Font(None, 50)
+        text = font.render("Для продолжения на жмите на ESC", True, (100, 255, 100))
+        text_x = 820
+        text_y = 730
+        text_w = text.get_width()
+        text_h = text.get_height()
+        screen.blit(text, (text_x, text_y))
+        pygame.draw.rect(screen, (0, 255, 0), (text_x - 10, text_y - 10,
+                                               text_w + 20, text_h + 20), 1)
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     terminate()
-
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     pygame.mixer.music.set_volume(0.4)
-                    #pygame.mouse.set_visible(False)
-
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    pygame.mixer.music.set_volume(0.4)
+                    pygame.mouse.set_visible(False)
                     return
                 pygame.display.flip()
                 clock.tick(fps)
 
 
 def end_screen_win():
-    con = sqlite3.connect('history.db')
-    cur = con.cursor()
-    cur.execute("""INSERT INTO hist_tab (day, time, score) VALUES (?, ?
-                , ?)""", (
-        dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.kil))
-    con.commit()
     with open(os.path.join('data', 'win_text'), encoding="UTF-8") as a:
         intro_text = list(map(str.strip, a.readlines()))
     fon = pygame.transform.scale(load_image('win_fon.jpg'), size)
@@ -333,12 +333,6 @@ def end_screen_win():
 
 
 def end_screen_lose():
-    con = sqlite3.connect('history.db')
-    cur = con.cursor()
-    cur.execute("""INSERT INTO hist_tab (day, time, score) VALUES (?, ?
-            , ?)""", (
-        dt.datetime.now().date().strftime("%d.%m.%Y"), dt.datetime.now().time().strftime("%H:%M"), mountain.kil))
-    con.commit()
     with open(os.path.join('data', 'lose_text'), encoding="UTF-8") as a:
         intro_text = list(map(str.strip, a.readlines()))
     fon = pygame.transform.scale(load_image('lose_fon.jpg'), size)
@@ -451,9 +445,9 @@ while running:
     mouse_sprite.update()
     if reloading:
         reload()
-    if mountain.kil == 100:
+    if mountain.kil == 30:
         end_screen_win()
 
-    if mountain.done == 50:
+    if mountain.done == 20:
         end_screen_lose()
     pygame.display.flip()
