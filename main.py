@@ -3,11 +3,8 @@ import os
 import sys
 import random
 from os import path
-import sqlite3
-import datetime as dt
 import time
 
-import pyinstaller as pyinstaller
 
 spawn_flag = False
 pygame.init()
